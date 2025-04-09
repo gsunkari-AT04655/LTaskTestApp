@@ -20,11 +20,11 @@ namespace LTaskTestApp
         public Form1()
         {
             InitializeComponent();
-            
+
 
         }
-        string partFilePath = "D:\\onedrive shyam\\LTask\\LPart.ipt";
-        string DrawingSheetFilePath = "D:\\onedrive shyam\\LTask\\StandardSheet.idw";
+        string partFilePath = "D:\\onedrive shyam\\TaskApp\\LTaskTestApp\\LTask\\LPart.ipt";
+        string DrawingSheetFilePath = "D:\\onedrive shyam\\TaskApp\\LTaskTestApp\\LTask\\StandardSheet.idw";
         private void btn_ClickMe_Click(object sender, EventArgs e)
         {
             // INV INI
@@ -52,6 +52,9 @@ namespace LTaskTestApp
             //PART INI
             PartDocument partDoc = null;
             partDoc = (PartDocument)invapp.Documents.Open(partFilePath, false);
+            double thck = (partDoc.ComponentDefinition.Parameters.UserParameters["Thickness"].Value);
+            //double thck = (partDoc.ComponentDefinition.Parameters.UserParameters[0].Value)/2.54;
+
             // DRW INI
             DrawingDocument drawingDoc = null;
             drawingDoc = (DrawingDocument)invapp.Documents.Open(DrawingSheetFilePath, true);
@@ -74,7 +77,10 @@ namespace LTaskTestApp
             drawingView1 = oSheet.DrawingViews.AddBaseView((_Document)partDoc, point1, 0.025, ViewOrientationTypeEnum.kFrontViewOrientation, DrawingViewStyleEnum.kHiddenLineRemovedDrawingViewStyle);
             drawingView1.Label.FormattedText = "FRONT-VIEW";
 
-
+            DrawingView drawingView2 = null;
+            point1 = invapp.TransientGeometry.CreatePoint2d(27, 20);
+            drawingView2 = oSheet.DrawingViews.AddBaseView((_Document)partDoc, point1, 0.025, ViewOrientationTypeEnum.kRightViewOrientation, DrawingViewStyleEnum.kHiddenLineRemovedDrawingViewStyle);
+            drawingView2.Label.FormattedText = "RIGHT-VIEW";
             //ADD DIMENSIONS
 
             Debug.WriteLine(drawingView1.DrawingCurves.Count);
@@ -83,31 +89,37 @@ namespace LTaskTestApp
 
             double leftPoint = drawingView1.Position.X - drawingView1.Width / 2;
             double rightPoint = drawingView1.Position.X + drawingView1.Width / 2;
-
-            double offset = (topPoint - drawingView1.Position.Y) / drawingView1.Scale;
-            double offset_Bot = (BotPoint - drawingView1.Position.Y) / drawingView1.Scale;
+            //double offset = drawingView1.Height /( 2*drawingView1.Scale);
+            double offset = drawingView1.Height / (2 * drawingView1.Scale);
+            double offset_Bot = -(drawingView1.Height / (2 * drawingView1.Scale));
 
             double offsetleft = (leftPoint - drawingView1.Position.X) / drawingView1.Scale;
             double offset_Right = (rightPoint - drawingView1.Position.X) / drawingView1.Scale;
 
 
-            Point2d pt1 = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X-100, offset);
-            Point2d pt2 = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X-100 + (2 * 2.54), offset);
+            Point2d pt1 = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X - 100, offset);
+            Point2d pt2 = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X - 100 + (2 * 2.54), offset);
             Point2d pt3 = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.Y, offset_Bot);
             Point2d pt4 = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.Y + 2 * 2.54, offset_Bot);
 
-            Point2d pt5 = invapp.TransientGeometry.CreatePoint2d(offsetleft,drawingView1.Position.Y- offset);
+            Point2d pt5 = invapp.TransientGeometry.CreatePoint2d(offsetleft, drawingView1.Position.Y - offset);
             Point2d pt6 = invapp.TransientGeometry.CreatePoint2d(offsetleft, drawingView1.Position.Y - offset + (2 * 2.54));
             Point2d pt7 = invapp.TransientGeometry.CreatePoint2d(offset_Right, drawingView1.Position.Y - offset);
             Point2d pt8 = invapp.TransientGeometry.CreatePoint2d(offset_Right, drawingView1.Position.Y - offset + (2 * 2.54));
 
+            Point2d pt9 = invapp.TransientGeometry.CreatePoint2d(offsetleft + thck, drawingView1.Position.Y + (offset / 2));
+            Point2d pt10 = invapp.TransientGeometry.CreatePoint2d(offsetleft + thck, drawingView1.Position.Y + (offset / 2) + (2 * 2.54));
+
             DrawingSketch drawingSketch = drawingView1.Sketches.Add();
             drawingSketch.Edit();
-            SketchLine drawingLine = drawingSketch.SketchLines.AddByTwoPoints(pt1,pt2);
+            SketchLine drawingLine = drawingSketch.SketchLines.AddByTwoPoints(pt1, pt2);
             SketchLine drawingLine2 = drawingSketch.SketchLines.AddByTwoPoints(pt3, pt4);
 
             SketchLine drawingLine3 = drawingSketch.SketchLines.AddByTwoPoints(pt5, pt6);
             SketchLine drawingLine4 = drawingSketch.SketchLines.AddByTwoPoints(pt7, pt8);
+
+            SketchLine drawingLine5 = drawingSketch.SketchLines.AddByTwoPoints(pt9, pt10);
+
             drawingSketch.ExitEdit();
 
             GeometryIntent geoIntent1 = oSheet.CreateGeometryIntent(drawingLine, PointIntentEnum.kCenterPointIntent);
@@ -115,17 +127,24 @@ namespace LTaskTestApp
             GeometryIntent geoIntent3 = oSheet.CreateGeometryIntent(drawingLine3, PointIntentEnum.kCenterPointIntent);
             GeometryIntent geoIntent4 = oSheet.CreateGeometryIntent(drawingLine4, PointIntentEnum.kCenterPointIntent);
 
+            GeometryIntent geoIntent5 = oSheet.CreateGeometryIntent(drawingLine5, PointIntentEnum.kCenterPointIntent);
+
+
             Point2d ptv = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X - 10 + 2 * 2.54, drawingView1.Position.Y);
 
-            Point2d pth = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X, drawingView1.Position.Y-6);
+            Point2d pth = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X, drawingView1.Position.Y - 6);
+
+            Point2d ptUp = invapp.TransientGeometry.CreatePoint2d(drawingView1.Position.X - 1, drawingView1.Position.Y + 6);
 
             GeneralDimensions dims = oSheet.DrawingDimensions.GeneralDimensions;
             GeneralDimension dim = (GeneralDimension)dims.AddLinear(ptv, geoIntent1, geoIntent2, DimensionTypeEnum.kVerticalDimensionType);
 
             GeneralDimension dim1 = (GeneralDimension)dims.AddLinear(pth, geoIntent3, geoIntent4, DimensionTypeEnum.kHorizontalDimensionType);
 
+            GeneralDimension dim2 = (GeneralDimension)dims.AddLinear(ptUp, geoIntent3, geoIntent5, DimensionTypeEnum.kHorizontalDimensionType);
+
             // DRW RENAME & SAVEAS
-            string newFileName = "D:\\onedrive shyam\\LTask\\output.idw";
+            string newFileName = "D:\\onedrive shyam\\TaskApp\\LTaskTestApp\\LTask\\output.idw";
             try
             {
                 drawingDoc.SaveAs(newFileName, true);
